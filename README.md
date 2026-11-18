@@ -50,3 +50,8 @@ An authenticated job API and worker must handle resumable uploads, media probing
 5. Rendering, preview, and caption styling.
 6. Individual MP4 and ZIP exports.
 7. Usage limits, cost controls, and monitoring.
+
+
+## Connected Supabase project
+
+The VEXARO CLIPS project uses its dedicated Supabase project for authentication and job metadata. Cloudflare Pages production and preview builds receive the public Supabase URL and publishable key through environment variables. Never put a Supabase secret key in browser code.
