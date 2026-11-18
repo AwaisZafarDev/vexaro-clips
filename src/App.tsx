@@ -17,20 +17,43 @@ export default function App() {
  function selectFile(f?:File){setNotice("");if(!f)return;if(!f.type.startsWith("video/")){setNotice("Please select a video file.");return;}if(f.size>MAX_BYTES){setNotice("This video exceeds the 50 MB upload limit.");return;}setFile(f);}
  async function prepare(){
   setNotice("");
-  if(source==="upload"){setNotice("Direct file upload is not connected to the processing backend yet. YouTube job creation is available first.");return;}
-  const requestedCount=count==="Custom"?Number(customCount):Number(count);if(!Number.isInteger(requestedCount)||requestedCount<1||requestedCount>50){setNotice("Choose a clip count between 1 and 50.");return;}
-  let parsed:URL;
-  try{parsed=new URL(url.trim());}catch{setNotice("Paste a valid YouTube video URL first.");return;}
-  if(!["youtube.com","www.youtube.com","m.youtube.com","youtu.be","www.youtube-nocookie.com"].includes(parsed.hostname)||parsed.protocol!=="https:"){setNotice("Please paste a valid HTTPS YouTube video link.");return;}
   if(!supabase){setNotice("Supabase is not configured.");return;}
+  const requestedCount=count==="Custom"?Number(customCount):Number(count);
+  if(!Number.isInteger(requestedCount)||requestedCount<1||requestedCount>50){setNotice("Choose a clip count between 1 and 50.");return;}
+  let uploadedPath:string|undefined;
   setJobBusy(true);
   try{
-   const {data,error}=await supabase.functions.invoke("create-video-job",{body:{source_type:"youtube",source_url:url.trim(),category,requested_clip_count:requestedCount,aspect_ratio:ratio,caption_language:language}});
-   if(error)throw error;
-   if(data?.error)throw new Error(data.error);
-   setJobs(current=>[data.job,...current.filter(job=>job.id!==data.job.id)]);setNotice("Project saved successfully · Job ID: "+data.job.id+". It is queued, but authorized video ingestion and the AI rendering worker still need to be connected.");
-  }catch(err){setNotice(err instanceof Error?err.message:"Could not create the project. Please sign in again.");}
-  finally{setJobBusy(false);}
+   let data:any;
+   if(source==="upload"){
+    if(!file)throw new Error("Choose a video file first.");
+    if(file.size>MAX_BYTES)throw new Error("This video exceeds the 50 MB upload limit.");
+    if(!file.type.startsWith("video/"))throw new Error("Please select a supported video file.");
+    const {data:{user},error:userError}=await supabase.auth.getUser();
+    if(userError||!user)throw new Error("Your session expired. Please sign in again.");
+    const jobId=crypto.randomUUID();
+    const safeName=file.name.normalize("NFKD").replace(/[^a-zA-Z0-9._-]/g,"_").slice(-120)||"video.mp4";
+    uploadedPath=user.id+"/"+jobId+"/"+safeName;
+    const {error:uploadError}=await supabase.storage.from("source-videos").upload(uploadedPath,file,{contentType:file.type,upsert:false});
+    if(uploadError)throw uploadError;
+    const result=await supabase.functions.invoke("create-video-job",{body:{source_type:"upload",job_id:jobId,source_path:uploadedPath,original_filename:file.name,file_size_bytes:file.size,category,requested_clip_count:requestedCount,aspect_ratio:ratio,caption_language:language}});
+    if(result.error||result.data?.error){await supabase.storage.from("source-videos").remove([uploadedPath]);throw new Error(result.data?.error||result.error?.message||"Could not create the upload project.");}
+    data=result.data;
+    setFile(null);
+   }else{
+    let parsed:URL;
+    try{parsed=new URL(url.trim());}catch{throw new Error("Paste a valid YouTube video URL first.");}
+    if(!["youtube.com","www.youtube.com","m.youtube.com","youtu.be","www.youtube-nocookie.com"].includes(parsed.hostname)||parsed.protocol!=="https:")throw new Error("Please paste a valid HTTPS YouTube video link.");
+    const result=await supabase.functions.invoke("create-video-job",{body:{source_type:"youtube",source_url:url.trim(),category,requested_clip_count:requestedCount,aspect_ratio:ratio,caption_language:language}});
+    if(result.error)throw result.error;
+    if(result.data?.error)throw new Error(result.data.error);
+    data=result.data;
+   }
+   setJobs(current=>[data.job,...current.filter(job=>job.id!==data.job.id)]);
+   setNotice(data.message||("Project saved successfully · Job ID: "+data.job.id));
+  }catch(err){
+   if(uploadedPath)await supabase.storage.from("source-videos").remove([uploadedPath]);
+   setNotice(err instanceof Error?err.message:"Could not create the project. Please sign in again.");
+  }finally{setJobBusy(false);}
  }
  if(!isSupabaseConfigured||!session)return <div className="auth-screen"><div className="auth-card"><a className="brand"><span className="brandmark"><Scissors size={19}/></span>VEXARO <b>CLIPS</b></a><div className="auth-icon"><WandSparkles size={25}/></div><h1>{isSupabaseConfigured?(authMode==="signin"?"Welcome back":"Create your creator account"):"Connect your workspace"}</h1><p>{isSupabaseConfigured?"Sign in to save projects and access your private video workspace.":"Supabase configuration is missing. The workspace cannot authenticate yet."}</p>{isSupabaseConfigured&&<form onSubmit={authenticate}><label>Email address</label><input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/><label>Password</label><input type="password" autoComplete={authMode==="signin"?"current-password":"new-password"} minLength={8} required value={password} onChange={e=>setPassword(e.target.value)} placeholder="At least 8 characters"/><button className="auth-submit" disabled={authBusy}>{authBusy?"Please wait…":authMode==="signin"?"Sign in":"Create account"} <ArrowRight size={16}/></button></form>}{authNotice&&<div className="auth-notice">{authNotice}</div>}{awaitingConfirmation&&authMode==="signup"&&<button className="auth-switch" disabled={resendBusy} onClick={resendConfirmation}>{resendBusy?"Sending…":"Resend confirmation email"}</button>}{isSupabaseConfigured&&<button className="auth-switch" onClick={()=>{setAuthMode(authMode==="signin"?"signup":"signin");setAwaitingConfirmation(false);setAuthNotice("");}}>{authMode==="signin"?"New here? Create an account":"Already registered? Sign in"}</button>}<small className="auth-foot"><ShieldCheck size={13}/> Your projects are protected by account-level access rules.</small></div></div>;
  return <div className="shell">
