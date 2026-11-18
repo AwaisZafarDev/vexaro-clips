@@ -14,3 +14,28 @@
 .header-actions{display:flex;align-items:center;gap:10px}.signout{display:flex;align-items:center;gap:6px;border:1px solid #303647;background:#151925;color:#aeb4c4;border-radius:7px;padding:7px 10px;font-size:10px}
 .action-row button:disabled{opacity:.65;cursor:wait}
 @media(max-width:700px){.auth-card{padding:24px 20px}.header-actions{gap:6px}.system{font-size:9px;padding:6px 8px}.signout{font-size:9px;padding:6px 8px}}
+
+
+.nav{width:100%;border:0;background:transparent;text-align:left;font:inherit;cursor:pointer}
+.custom-count{display:block;width:100px;height:34px;margin-top:9px;border-radius:7px;border:1px solid #9278e7;background:#151925;color:#f4f5fa;padding:0 9px;font-size:11px}
+.projects-view{min-height:65vh}
+.empty-projects{margin-top:16px;min-height:210px;border:1px dashed #353b4d;border-radius:12px;background:#11141e;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;color:#bba9ff}
+.empty-projects h3{color:#f4f5fa;font:600 17px 'Space Grotesk';margin:12px 0 5px}
+.empty-projects p{font-size:11px;color:#9298a9;margin:0 0 15px}
+.project-list{display:grid;gap:12px;margin-top:16px}
+.project-card{border:1px solid #292e3d;background:#11141e;border-radius:12px;padding:16px}
+.project-card-top{display:flex;align-items:center;gap:11px}
+.project-icon{width:37px;height:37px;display:grid;place-items:center;border-radius:10px;background:#29233d;color:#bba7ff}
+.project-main{min-width:0;flex:1}
+.project-main b{display:block;font-size:12px;color:#f4f5fa}
+.project-main small,.project-card-bottom small{display:block;font-size:9px;color:#81889a;margin-top:4px}
+.job-status{font-size:9px;text-transform:capitalize;padding:5px 8px;border-radius:20px;background:#30283f;color:#d5c5ff}
+.job-status.completed{background:#17382f;color:#8de0bc}
+.job-status.failed{background:#42252a;color:#ffb0b0}
+.job-status.processing{background:#27354b;color:#9fcaff}
+.project-meta{display:flex;flex-wrap:wrap;gap:8px 15px;margin:15px 0 10px;color:#9aa1b2;font-size:9px;text-transform:capitalize}
+.progress-track{height:5px;border-radius:9px;background:#252a38;overflow:hidden}
+.progress-track span{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#9273ec,#6edce0);transition:width .25s ease}
+.project-card-bottom{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px}
+.job-error{color:#ffaaaa!important}
+.project-hint{font-size:10px;color:#a99bdb;margin:12px 0 0}
