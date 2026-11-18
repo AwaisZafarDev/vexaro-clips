@@ -89,3 +89,18 @@ Callbacks must include `Authorization: Bearer <VIDEO_PROCESSOR_WEBHOOK_SECRET>`.
 - ZIP packaging and clip preview playback in the UI.
 
 Never place Supabase service-role keys, provider tokens, or webhook secrets in frontend code or public repository files.
+
+## First-pass self-hosted worker source
+
+A Docker-based processor implementation now lives in `processor/`:
+
+- FastAPI HTTP endpoint compatible with `POST /jobs`
+- faster-whisper transcription on CPU
+- Transcript-density highlight-window selection (heuristic, not semantic AI ranking)
+- FFmpeg MP4 rendering with burned-in captions and 9:16, 1:1, or 16:9 output
+- Uploads to the supplied signed Supabase Storage targets
+- Authenticated progress and completion/failure callbacks
+
+See [processor/README.md](../processor/README.md) for local Docker setup and required environment variables.
+
+**This source code is not yet a running processor service.** It has not been hosted, configured with Supabase secrets, or integration-tested against a real uploaded video. A reliable always-on deployment may incur hosting costs; do not enable paid compute without the user's approval. The first-pass highlight selector is heuristic, and caption translation is not implemented.
