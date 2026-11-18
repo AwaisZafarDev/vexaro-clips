@@ -55,3 +55,7 @@ An authenticated job API and worker must handle resumable uploads, media probing
 ## Connected Supabase project
 
 The VEXARO CLIPS project uses its dedicated Supabase project for authentication and job metadata. Cloudflare Pages production and preview builds receive the public Supabase URL and publishable key through environment variables. Never put a Supabase secret key in browser code.
+
+## Authentication redirect configuration
+
+For the production Supabase Auth URL Configuration, set the Site URL to `https://vexaro-clips.pages.dev` and allow `https://vexaro-clips.pages.dev/**` plus `https://*.vexaro-clips.pages.dev/**`. The signup flow passes the current production origin as `emailRedirectTo`; users can request a fresh signup confirmation email from the sign-up screen.
