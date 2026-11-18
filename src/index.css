@@ -39,3 +39,7 @@
 .project-card-bottom{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px}
 .job-error{color:#ffaaaa!important}
 .project-hint{font-size:10px;color:#a99bdb;margin:12px 0 0}
+
+
+.mobile-projects{display:none;align-items:center;gap:6px;border:1px solid #51427f;background:#28213d;color:#d5caff;border-radius:7px;padding:7px 9px;font-size:10px}
+@media(max-width:700px){.mobile-projects{display:inline-flex}.system{display:none}.header-actions{gap:7px}}
